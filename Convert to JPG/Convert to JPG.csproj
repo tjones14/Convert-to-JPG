@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>clipart1538847.ico</ApplicationIcon>
@@ -13,8 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FreeSpire.Doc" Version="10.2.0" />
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="11.0.0" />
+    <PackageReference Include="FreeSpire.PDF" Version="11.11.0" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.10.2" />
+    <PackageReference Include="System.Formats.Asn1" Version="9.0.7" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.7" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.7" />
   </ItemGroup>
 
 </Project>

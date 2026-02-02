@@ -30,135 +30,146 @@ namespace HEICtoJPG
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.dropPanel = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.radioJPG = new System.Windows.Forms.RadioButton();
-            this.radioPDF = new System.Windows.Forms.RadioButton();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.groupBox1.SuspendLayout();
-            this.SuspendLayout();
+            dropPanel = new System.Windows.Forms.Panel();
+            label1 = new System.Windows.Forms.Label();
+            button1 = new System.Windows.Forms.Button();
+            listBox1 = new System.Windows.Forms.ListBox();
+            label2 = new System.Windows.Forms.Label();
+            radioJPG = new System.Windows.Forms.RadioButton();
+            radioPDF = new System.Windows.Forms.RadioButton();
+            groupBox1 = new System.Windows.Forms.GroupBox();
+            label3 = new System.Windows.Forms.Label();
+            chkNormalizeSize = new System.Windows.Forms.CheckBox();
+            groupBox1.SuspendLayout();
+            SuspendLayout();
             // 
             // dropPanel
             // 
-            this.dropPanel.AllowDrop = true;
-            this.dropPanel.AutoSize = true;
-            this.dropPanel.BackColor = System.Drawing.Color.LightSteelBlue;
-            this.dropPanel.Cursor = System.Windows.Forms.Cursors.Default;
-            this.dropPanel.Location = new System.Drawing.Point(12, 43);
-            this.dropPanel.Name = "dropPanel";
-            this.dropPanel.Size = new System.Drawing.Size(623, 340);
-            this.dropPanel.TabIndex = 0;
-            this.dropPanel.DragDrop += new System.Windows.Forms.DragEventHandler(this.DropPanel_DragDrop);
-            this.dropPanel.DragEnter += new System.Windows.Forms.DragEventHandler(this.DropPanel_DragEnter);
+            dropPanel.AllowDrop = true;
+            dropPanel.AutoSize = true;
+            dropPanel.BackColor = System.Drawing.Color.LightSteelBlue;
+            dropPanel.Location = new System.Drawing.Point(12, 43);
+            dropPanel.Name = "dropPanel";
+            dropPanel.Size = new System.Drawing.Size(623, 340);
+            dropPanel.TabIndex = 0;
+            dropPanel.DragDrop += DropPanel_DragDrop;
+            dropPanel.DragEnter += DropPanel_DragEnter;
             // 
             // label1
             // 
-            this.label1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.label1.Font = new System.Drawing.Font("Leelawadee", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.label1.ForeColor = System.Drawing.Color.RoyalBlue;
-            this.label1.Location = new System.Drawing.Point(0, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(647, 40);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Drag and Drop images to be converted";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            label1.Dock = System.Windows.Forms.DockStyle.Top;
+            label1.Font = new System.Drawing.Font("Leelawadee", 20F, System.Drawing.FontStyle.Bold);
+            label1.ForeColor = System.Drawing.Color.RoyalBlue;
+            label1.Location = new System.Drawing.Point(0, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(647, 40);
+            label1.TabIndex = 0;
+            label1.Text = "Drag and Drop images to be converted";
+            label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // button1
             // 
-            this.button1.BackColor = System.Drawing.Color.RoyalBlue;
-            this.button1.Font = new System.Drawing.Font("Leelawadee", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(504, 447);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(131, 36);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Process Images";
-            this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.Button1_Click);
+            button1.BackColor = System.Drawing.Color.RoyalBlue;
+            button1.Font = new System.Drawing.Font("Leelawadee", 9F, System.Drawing.FontStyle.Bold);
+            button1.ForeColor = System.Drawing.Color.White;
+            button1.Location = new System.Drawing.Point(504, 447);
+            button1.Name = "button1";
+            button1.Size = new System.Drawing.Size(131, 36);
+            button1.TabIndex = 1;
+            button1.Text = "Process Images";
+            button1.UseVisualStyleBackColor = false;
+            button1.Click += Button1_Click;
             // 
             // listBox1
             // 
-            this.listBox1.Enabled = false;
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.ItemHeight = 15;
-            this.listBox1.Location = new System.Drawing.Point(12, 434);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(327, 49);
-            this.listBox1.TabIndex = 2;
+            listBox1.Enabled = false;
+            listBox1.FormattingEnabled = true;
+            listBox1.Location = new System.Drawing.Point(12, 434);
+            listBox1.Name = "listBox1";
+            listBox1.Size = new System.Drawing.Size(327, 49);
+            listBox1.TabIndex = 2;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(15, 412);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(105, 15);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Processing Images";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(15, 412);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(105, 15);
+            label2.TabIndex = 3;
+            label2.Text = "Processing Images";
             // 
             // radioJPG
             // 
-            this.radioJPG.AutoSize = true;
-            this.radioJPG.Location = new System.Drawing.Point(21, 14);
-            this.radioJPG.Name = "radioJPG";
-            this.radioJPG.Size = new System.Drawing.Size(44, 19);
-            this.radioJPG.TabIndex = 4;
-            this.radioJPG.TabStop = true;
-            this.radioJPG.Text = "JPG";
-            this.radioJPG.UseVisualStyleBackColor = true;
+            radioJPG.AutoSize = true;
+            radioJPG.Location = new System.Drawing.Point(21, 14);
+            radioJPG.Name = "radioJPG";
+            radioJPG.Size = new System.Drawing.Size(44, 19);
+            radioJPG.TabIndex = 4;
+            radioJPG.TabStop = true;
+            radioJPG.Text = "JPG";
+            radioJPG.UseVisualStyleBackColor = true;
             // 
             // radioPDF
             // 
-            this.radioPDF.AutoSize = true;
-            this.radioPDF.Location = new System.Drawing.Point(71, 14);
-            this.radioPDF.Name = "radioPDF";
-            this.radioPDF.Size = new System.Drawing.Size(46, 19);
-            this.radioPDF.TabIndex = 5;
-            this.radioPDF.TabStop = true;
-            this.radioPDF.Text = "PDF";
-            this.radioPDF.UseVisualStyleBackColor = true;
+            radioPDF.AutoSize = true;
+            radioPDF.Location = new System.Drawing.Point(71, 14);
+            radioPDF.Name = "radioPDF";
+            radioPDF.Size = new System.Drawing.Size(46, 19);
+            radioPDF.TabIndex = 5;
+            radioPDF.TabStop = true;
+            radioPDF.Text = "PDF";
+            radioPDF.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.radioPDF);
-            this.groupBox1.Controls.Add(this.radioJPG);
-            this.groupBox1.Location = new System.Drawing.Point(518, 396);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(128, 45);
-            this.groupBox1.TabIndex = 6;
-            this.groupBox1.TabStop = false;
+            groupBox1.Controls.Add(radioPDF);
+            groupBox1.Controls.Add(radioJPG);
+            groupBox1.Location = new System.Drawing.Point(504, 383);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new System.Drawing.Size(128, 45);
+            groupBox1.TabIndex = 6;
+            groupBox1.TabStop = false;
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(445, 412);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(67, 15);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "Convert To:";
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(431, 399);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(68, 15);
+            label3.TabIndex = 7;
+            label3.Text = "Convert To:";
+            // 
+            // chkNormalizeSize
+            // 
+            chkNormalizeSize.AutoSize = true;
+            chkNormalizeSize.Enabled = false;
+            chkNormalizeSize.Location = new System.Drawing.Point(530, 422);
+            chkNormalizeSize.Name = "chkNormalizeSize";
+            chkNormalizeSize.Size = new System.Drawing.Size(102, 19);
+            chkNormalizeSize.TabIndex = 8;
+            chkNormalizeSize.Text = "Normalize size";
+            chkNormalizeSize.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(647, 495);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.listBox1);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.dropPanel);
-            this.Controls.Add(this.label1);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form1";
-            this.Text = "Convert to Jpg";
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(647, 495);
+            Controls.Add(chkNormalizeSize);
+            Controls.Add(label3);
+            Controls.Add(groupBox1);
+            Controls.Add(label2);
+            Controls.Add(listBox1);
+            Controls.Add(button1);
+            Controls.Add(dropPanel);
+            Controls.Add(label1);
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            Name = "Form1";
+            Text = "Convert to Jpg";
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
 
         }
 
@@ -173,6 +184,7 @@ namespace HEICtoJPG
         private System.Windows.Forms.RadioButton radioPDF;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox chkNormalizeSize;
     }
 }
 
