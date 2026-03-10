@@ -4,6 +4,7 @@ using ImageMagick;
 using System.IO;
 using System.Windows.Forms;
 using Spire.Pdf;
+using System.ComponentModel;
 
 
 namespace HEICtoJPG
@@ -16,9 +17,15 @@ namespace HEICtoJPG
         {
             InitializeComponent();
             fileList = [];
+            radioPDF.CheckedChanged += RadioPDF_CheckedChanged;
         }
 
-        private void DropPanel_DragEnter(object sender, DragEventArgs e)
+        private void RadioPDF_CheckedChanged(object? sender, EventArgs e)
+        {
+            checkBoxSingleFile.Enabled = radioPDF.Checked;
+        }
+
+        private void DropPanel_DragEnter(object? sender, DragEventArgs e)
         {
             if (e != null && e.Data != null)
             {
@@ -29,7 +36,7 @@ namespace HEICtoJPG
             }
         }
 
-        private void DropPanel_DragDrop(object sender, DragEventArgs e)
+        private void DropPanel_DragDrop(object? sender, DragEventArgs e)
         {
             if (e != null && e.Data != null)
             {
@@ -47,99 +54,200 @@ namespace HEICtoJPG
             {
                 listBox1.Items.Add(item);
             }
-            UpdateNormalizeSizeCheckboxState();
-        }
-
-        private void UpdateNormalizeSizeCheckboxState()
-        {
-            chkNormalizeSize.Enabled = fileList.Count > 1;
         }
 
         private void NormalizeImageSize(List<MagickImage> images)
         {
-            if (!chkNormalizeSize.Checked)
-            {
-                return;
-            }
+            // Maximum physical dimensions in inches
+            const double maxWidthInches = 8.5;
+            const double maxHeightInches = 11.0;
 
-            // Use the size of the first image as the normalized size
-            uint normalizedWidth = images[0].Width;
-            uint normalizedHeight = images[0].Height;
+            // Standard DPI for screen display
+            const double dpi = 96.0;
 
-            for (int i = 1; i < images.Count; i++)
+            // Convert physical dimensions to pixels
+            uint maxWidthPixels = (uint)(maxWidthInches * dpi);
+            uint maxHeightPixels = (uint)(maxHeightInches * dpi);
+
+            foreach (var image in images)
             {
-                images[i].Resize(normalizedWidth, normalizedHeight);
+                uint currentWidth = image.Width;
+                uint currentHeight = image.Height;
+
+                // Check if image exceeds either dimension limit
+                if (currentWidth > maxWidthPixels || currentHeight > maxHeightPixels)
+                {
+                    // Calculate scale factors for each dimension
+                    double widthScale = (double)maxWidthPixels / currentWidth;
+                    double heightScale = (double)maxHeightPixels / currentHeight;
+
+                    // Use the smaller scale factor to maintain aspect ratio
+                    double scale = Math.Min(widthScale, heightScale);
+
+                    // Calculate new dimensions
+                    uint newWidth = (uint)(currentWidth * scale);
+                    uint newHeight = (uint)(currentHeight * scale);
+
+                    // Resize the image maintaining aspect ratio
+                    image.Resize(newWidth, newHeight);
+                }
             }
         }
 
-        private void Button1_Click(object sender, EventArgs e)
+        private (double Width, double Height) CalculateImageDimensionsForPdf(uint imageWidth, uint imageHeight, double pageWidth, double pageHeight)
         {
-            if (radioJPG.Checked == true)
+            double imageAspectRatio = (double)imageWidth / imageHeight;
+            double pageAspectRatio = pageWidth / pageHeight;
+
+            double calculatedWidth, calculatedHeight;
+
+            if (imageAspectRatio > pageAspectRatio)
             {
-                List<MagickImage> images = [];
-                
-                // Load all images first to determine normalization size if needed
-                foreach (var file in fileList)
+                // Image is wider than page, fit to page width
+                calculatedWidth = pageWidth;
+                calculatedHeight = pageWidth / imageAspectRatio;
+            }
+            else
+            {
+                // Image is taller than page, fit to page height
+                calculatedHeight = pageHeight;
+                calculatedWidth = pageHeight * imageAspectRatio;
+            }
+
+            return (calculatedWidth, calculatedHeight);
+        }
+
+        private void Button1_Click(object? sender, EventArgs e)
+        {
+            if (!radioJPG.Checked && !radioPDF.Checked)
+            {
+                MessageBox.Show("Please select a type of conversion.");
+                return;
+            }
+
+            button1.Enabled = false;
+            progressSpinner.Visible = true;
+            progressSpinner.Value = 0;
+            progressSpinner.Maximum = fileList.Count;
+
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.WorkerReportsProgress = true;
+
+            worker.DoWork += (s, args) =>
+            {
+                try
                 {
-                    if (File.Exists(file))
+                    if (radioJPG.Checked)
                     {
-                        images.Add(new MagickImage(file));
+                        ProcessJpgConversion(worker);
+                    }
+
+                    if (radioPDF.Checked)
+                    {
+                        ProcessPdfConversion(worker);
                     }
                 }
-
-                // Normalize image sizes if checkbox is checked
-                NormalizeImageSize(images);
-
-                int imageIndex = 0;
-                foreach (var file in fileList)
+                catch (Exception ex)
                 {
-                    if (File.Exists(file) && imageIndex < images.Count)
-                    {
-                        var fileName = Path.GetFileName(file);
-                        var path = Path.GetDirectoryName(file);
-                        path += @"\out-";
+                    args.Result = ex;
+                }
+            };
 
-                        using (MagickImage image = images[imageIndex])
-                        {
-                            string newfile = file.Replace(Path.GetExtension(file), ".jpg");
-                            var newFileName = Path.GetFileName(newfile);
-                            var outFile = path + newFileName;
-                            image.Write(outFile);
-                        }
+            worker.ProgressChanged += (s, args) =>
+            {
+                progressSpinner.Value = args.ProgressPercentage;
+            };
 
-                        imageIndex++;
-                    }
+            worker.RunWorkerCompleted += (s, args) =>
+            {
+                progressSpinner.Visible = false;
+                button1.Enabled = true;
+
+                if (args.Result is Exception ex)
+                {
+                    MessageBox.Show($"Error processing files: {ex.Message}");
+                }
+                else
+                {
+                    listBox1.Items.Clear();
+                    fileList.Clear();
+                    MessageBox.Show("All Files Processed");
+                }
+            };
+
+            worker.RunWorkerAsync();
+        }
+
+        private void ProcessJpgConversion(BackgroundWorker worker)
+        {
+            List<MagickImage> images = [];
+
+            // Load all images first to determine normalization size if needed
+            foreach (var file in fileList)
+            {
+                if (File.Exists(file))
+                {
+                    images.Add(new MagickImage(file));
                 }
             }
 
-            if (radioPDF.Checked == true)
+            // Normalize image sizes
+            NormalizeImageSize(images);
+
+            int imageIndex = 0;
+            foreach (var file in fileList)
             {
-                List<MagickImage> images = [];
-                
-                // Load all images first
-                foreach (var file in fileList)
+                if (File.Exists(file) && imageIndex < images.Count)
                 {
-                    if (File.Exists(file))
+                    var fileName = Path.GetFileName(file);
+                    var path = Path.GetDirectoryName(file);
+                    path += @"\out-";
+
+                    using (MagickImage image = images[imageIndex])
                     {
-                        images.Add(new MagickImage(file));
+                        string newfile = file.Replace(Path.GetExtension(file), ".jpg");
+                        var newFileName = Path.GetFileName(newfile);
+                        var outFile = path + newFileName;
+                        image.Write(outFile);
                     }
+
+                    imageIndex++;
+                    worker.ReportProgress(imageIndex);
                 }
+            }
+        }
 
-                // Normalize image sizes if checkbox is checked
-                NormalizeImageSize(images);
+        private void ProcessPdfConversion(BackgroundWorker worker)
+        {
+            List<MagickImage> images = [];
 
-                // Create PDF from images
-                if (images.Count > 0)
+            // Load all images first
+            foreach (var file in fileList)
+            {
+                if (File.Exists(file))
                 {
-                    var firstFile = fileList[0];
-                    var outputPath = Path.GetDirectoryName(firstFile) ?? Environment.CurrentDirectory;
-                    var pdfFileName = Path.Combine(outputPath, "out-combined.pdf");
-                    var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-                    Directory.CreateDirectory(tempDir);
+                    images.Add(new MagickImage(file));
+                }
+            }
 
-                    try
+            // Normalize image sizes
+            NormalizeImageSize(images);
+
+            if (images.Count > 0)
+            {
+                var firstFile = fileList[0];
+                var outputPath = Path.GetDirectoryName(firstFile) ?? Environment.CurrentDirectory;
+                var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                Directory.CreateDirectory(tempDir);
+
+                try
+                {
+                    if (checkBoxSingleFile.Checked)
                     {
+                        // Create single PDF with all images as pages
+                        var pdfFileName = Path.Combine(outputPath, "out-combined.pdf");
                         using PdfDocument doc = new();
+
                         int pageIndex = 0;
                         foreach (var image in images)
                         {
@@ -153,40 +261,62 @@ namespace HEICtoJPG
                             using (var imgStream = File.OpenRead(tempImagePath))
                             {
                                 var pdfImage = Spire.Pdf.Graphics.PdfImage.FromStream(imgStream);
-                                page.Canvas.DrawImage(pdfImage, 0, 0, page.GetClientSize().Width, page.GetClientSize().Height);
+                                var pageSize = page.GetClientSize();
+                                var imageDimensions = CalculateImageDimensionsForPdf(image.Width, image.Height, pageSize.Width, pageSize.Height);
+                                var xOffset = (float)((pageSize.Width - imageDimensions.Width) / 2);
+                                var yOffset = (float)((pageSize.Height - imageDimensions.Height) / 2);
+                                page.Canvas.DrawImage(pdfImage, xOffset, yOffset, (float)imageDimensions.Width, (float)imageDimensions.Height);
                             }
 
                             pageIndex++;
+                            worker.ReportProgress(pageIndex);
                         }
 
                         doc.SaveToFile(pdfFileName);
                     }
-                    finally
+                    else
                     {
-                        // Clean up temporary files
-                        try
+                        // Create individual PDF for each image
+                        int fileIndex = 0;
+                        foreach (var image in images)
                         {
-                            Directory.Delete(tempDir, true);
-                        }
-                        catch
-                        {
-                            // Ignore cleanup errors
+                            var tempImagePath = Path.Combine(tempDir, $"temp_{fileIndex}.png");
+                            image.Format = MagickFormat.Png;
+                            image.Write(tempImagePath);
+
+                            using PdfDocument doc = new();
+                            PdfPageBase page = doc.Pages.Add();
+                            using (var imgStream = File.OpenRead(tempImagePath))
+                            {
+                                var pdfImage = Spire.Pdf.Graphics.PdfImage.FromStream(imgStream);
+                                var pageSize = page.GetClientSize();
+                                var imageDimensions = CalculateImageDimensionsForPdf(image.Width, image.Height, pageSize.Width, pageSize.Height);
+                                var xOffset = (float)((pageSize.Width - imageDimensions.Width) / 2);
+                                var yOffset = (float)((pageSize.Height - imageDimensions.Height) / 2);
+                                page.Canvas.DrawImage(pdfImage, xOffset, yOffset, (float)imageDimensions.Width, (float)imageDimensions.Height);
+                            }
+
+                            var originalFileName = Path.GetFileNameWithoutExtension(fileList[fileIndex]);
+                            var pdfFileName = Path.Combine(outputPath, $"out-{originalFileName}.pdf");
+                            doc.SaveToFile(pdfFileName);
+
+                            fileIndex++;
+                            worker.ReportProgress(fileIndex);
                         }
                     }
                 }
-            }
-
-            if (radioJPG.Checked==true || radioPDF.Checked == true)
-            {
-                listBox1.Items.Clear();
-                fileList.Clear();
-                chkNormalizeSize.Checked = false;
-                UpdateNormalizeSizeCheckboxState();
-                MessageBox.Show("All Files Processed");
-            }
-            else
-            {
-                MessageBox.Show("Please select a type of conversion.");
+                finally
+                {
+                    // Clean up temporary files
+                    try
+                    {
+                        Directory.Delete(tempDir, true);
+                    }
+                    catch
+                    {
+                        // Ignore cleanup errors
+                    }
+                }
             }
         }
     }

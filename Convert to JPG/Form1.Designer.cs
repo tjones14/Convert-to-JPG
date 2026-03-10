@@ -39,7 +39,8 @@ namespace HEICtoJPG
             radioPDF = new System.Windows.Forms.RadioButton();
             groupBox1 = new System.Windows.Forms.GroupBox();
             label3 = new System.Windows.Forms.Label();
-            chkNormalizeSize = new System.Windows.Forms.CheckBox();
+            checkBoxSingleFile = new System.Windows.Forms.CheckBox();
+            progressSpinner = new System.Windows.Forms.ProgressBar();
             groupBox1.SuspendLayout();
             SuspendLayout();
             // 
@@ -139,23 +140,35 @@ namespace HEICtoJPG
             label3.TabIndex = 7;
             label3.Text = "Convert To:";
             // 
-            // chkNormalizeSize
+            // checkBoxSingleFile
             // 
-            chkNormalizeSize.AutoSize = true;
-            chkNormalizeSize.Enabled = false;
-            chkNormalizeSize.Location = new System.Drawing.Point(530, 422);
-            chkNormalizeSize.Name = "chkNormalizeSize";
-            chkNormalizeSize.Size = new System.Drawing.Size(102, 19);
-            chkNormalizeSize.TabIndex = 8;
-            chkNormalizeSize.Text = "Normalize size";
-            chkNormalizeSize.UseVisualStyleBackColor = true;
+            checkBoxSingleFile.AutoSize = true;
+            checkBoxSingleFile.Checked = true;
+            checkBoxSingleFile.CheckState = System.Windows.Forms.CheckState.Checked;
+            checkBoxSingleFile.Enabled = false;
+            checkBoxSingleFile.Location = new System.Drawing.Point(359, 447);
+            checkBoxSingleFile.Name = "checkBoxSingleFile";
+            checkBoxSingleFile.Size = new System.Drawing.Size(132, 19);
+            checkBoxSingleFile.TabIndex = 8;
+            checkBoxSingleFile.Text = "Generate Single File";
+            checkBoxSingleFile.UseVisualStyleBackColor = true;
+            // 
+            // progressSpinner
+            // 
+            progressSpinner.Location = new System.Drawing.Point(12, 486);
+            progressSpinner.Name = "progressSpinner";
+            progressSpinner.Size = new System.Drawing.Size(623, 23);
+            progressSpinner.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            progressSpinner.TabIndex = 9;
+            progressSpinner.Visible = false;
             // 
             // Form1
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(647, 495);
-            Controls.Add(chkNormalizeSize);
+            ClientSize = new System.Drawing.Size(647, 520);
+            Controls.Add(progressSpinner);
+            Controls.Add(checkBoxSingleFile);
             Controls.Add(label3);
             Controls.Add(groupBox1);
             Controls.Add(label2);
@@ -184,7 +197,8 @@ namespace HEICtoJPG
         private System.Windows.Forms.RadioButton radioPDF;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.CheckBox chkNormalizeSize;
+        private System.Windows.Forms.CheckBox checkBoxSingleFile;
+        private System.Windows.Forms.ProgressBar progressSpinner;
     }
 }
 
