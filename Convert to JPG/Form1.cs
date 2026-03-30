@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using ImageMagick;
 using System.IO;
 using System.Windows.Forms;
-using Spire.Pdf;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 using System.ComponentModel;
 
 
@@ -92,29 +93,6 @@ namespace HEICtoJPG
                     image.Resize(newWidth, newHeight);
                 }
             }
-        }
-
-        private (double Width, double Height) CalculateImageDimensionsForPdf(uint imageWidth, uint imageHeight, double pageWidth, double pageHeight)
-        {
-            double imageAspectRatio = (double)imageWidth / imageHeight;
-            double pageAspectRatio = pageWidth / pageHeight;
-
-            double calculatedWidth, calculatedHeight;
-
-            if (imageAspectRatio > pageAspectRatio)
-            {
-                // Image is wider than page, fit to page width
-                calculatedWidth = pageWidth;
-                calculatedHeight = pageWidth / imageAspectRatio;
-            }
-            else
-            {
-                // Image is taller than page, fit to page height
-                calculatedHeight = pageHeight;
-                calculatedWidth = pageHeight * imageAspectRatio;
-            }
-
-            return (calculatedWidth, calculatedHeight);
         }
 
         private void Button1_Click(object? sender, EventArgs e)
@@ -246,7 +224,11 @@ namespace HEICtoJPG
                     {
                         // Create single PDF with all images as pages
                         var pdfFileName = Path.Combine(outputPath, "out-combined.pdf");
-                        using PdfDocument doc = new();
+
+                        // Create document with letter size (8.5 x 11 inches)
+                        Document doc = new Document(PageSize.LETTER);
+                        PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(pdfFileName, FileMode.Create));
+                        doc.Open();
 
                         int pageIndex = 0;
                         foreach (var image in images)
@@ -257,22 +239,26 @@ namespace HEICtoJPG
                             image.Write(tempImagePath);
 
                             // Add image to PDF
-                            PdfPageBase page = doc.Pages.Add();
                             using (var imgStream = File.OpenRead(tempImagePath))
                             {
-                                var pdfImage = Spire.Pdf.Graphics.PdfImage.FromStream(imgStream);
-                                var pageSize = page.GetClientSize();
-                                var imageDimensions = CalculateImageDimensionsForPdf(image.Width, image.Height, pageSize.Width, pageSize.Height);
-                                var xOffset = (float)((pageSize.Width - imageDimensions.Width) / 2);
-                                var yOffset = (float)((pageSize.Height - imageDimensions.Height) / 2);
-                                page.Canvas.DrawImage(pdfImage, xOffset, yOffset, (float)imageDimensions.Width, (float)imageDimensions.Height);
+                                iTextSharp.text.Image pdfImage = iTextSharp.text.Image.GetInstance(imgStream);
+
+                                // Scale image to fit page with margins
+                                float pageWidth = doc.PageSize.Width - doc.LeftMargin - doc.RightMargin;
+                                float pageHeight = doc.PageSize.Height - doc.TopMargin - doc.BottomMargin;
+
+                                pdfImage.ScaleToFit(pageWidth, pageHeight);
+                                pdfImage.Alignment = Element.ALIGN_CENTER;
+
+                                doc.Add(pdfImage);
+                                doc.NewPage();
                             }
 
                             pageIndex++;
                             worker.ReportProgress(pageIndex);
                         }
 
-                        doc.SaveToFile(pdfFileName);
+                        doc.Close();
                     }
                     else
                     {
@@ -284,21 +270,28 @@ namespace HEICtoJPG
                             image.Format = MagickFormat.Png;
                             image.Write(tempImagePath);
 
-                            using PdfDocument doc = new();
-                            PdfPageBase page = doc.Pages.Add();
-                            using (var imgStream = File.OpenRead(tempImagePath))
-                            {
-                                var pdfImage = Spire.Pdf.Graphics.PdfImage.FromStream(imgStream);
-                                var pageSize = page.GetClientSize();
-                                var imageDimensions = CalculateImageDimensionsForPdf(image.Width, image.Height, pageSize.Width, pageSize.Height);
-                                var xOffset = (float)((pageSize.Width - imageDimensions.Width) / 2);
-                                var yOffset = (float)((pageSize.Height - imageDimensions.Height) / 2);
-                                page.Canvas.DrawImage(pdfImage, xOffset, yOffset, (float)imageDimensions.Width, (float)imageDimensions.Height);
-                            }
-
+                            // Create document with letter size (8.5 x 11 inches)
+                            Document doc = new Document(PageSize.LETTER);
                             var originalFileName = Path.GetFileNameWithoutExtension(fileList[fileIndex]);
                             var pdfFileName = Path.Combine(outputPath, $"out-{originalFileName}.pdf");
-                            doc.SaveToFile(pdfFileName);
+                            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(pdfFileName, FileMode.Create));
+                            doc.Open();
+
+                            using (var imgStream = File.OpenRead(tempImagePath))
+                            {
+                                iTextSharp.text.Image pdfImage = iTextSharp.text.Image.GetInstance(imgStream);
+
+                                // Scale image to fit page with margins
+                                float pageWidth = doc.PageSize.Width - doc.LeftMargin - doc.RightMargin;
+                                float pageHeight = doc.PageSize.Height - doc.TopMargin - doc.BottomMargin;
+
+                                pdfImage.ScaleToFit(pageWidth, pageHeight);
+                                pdfImage.Alignment = Element.ALIGN_CENTER;
+
+                                doc.Add(pdfImage);
+                            }
+
+                            doc.Close();
 
                             fileIndex++;
                             worker.ReportProgress(fileIndex);

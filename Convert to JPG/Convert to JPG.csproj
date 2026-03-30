@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FreeSpire.PDF" Version="11.11.0" />
+    <PackageReference Include="iTextSharp" Version="5.5.13.3" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.11.1" />
     <PackageReference Include="System.Formats.Asn1" Version="10.0.4" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.4" />
